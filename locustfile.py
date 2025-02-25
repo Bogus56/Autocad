@@ -1,5 +1,12 @@
 from locust import HttpUser, TaskSet, task, between
 
+- name: Sprawdzenie instalacji Locust
+  run: |
+    python3 --version
+    pip show locust
+
+
+
 class UserBehavior(TaskSet):
 
     @task(2)  # Rejestracja i quizy mają większą wagę
@@ -16,5 +23,6 @@ class UserBehavior(TaskSet):
         self.client.post("/api/messages", json={"receiver_id": 2, "message": "Cześć, jak ci poszło?"})
 
 class WebsiteUser(HttpUser):
+    host = "http://localhost:7137"  # Adres API do testowania
     tasks = [UserBehavior]
-    wait_time = between(1, 5)  # Czas oczekiwania między zadaniami
+    wait_time = between(1, 5)
