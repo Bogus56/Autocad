@@ -1,0 +1,192 @@
+﻿@model AUTOCAD.Models.Kurs
+
+<h1>Kurs Details</h1>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        display: flex;
+        background: linear-gradient(120deg, rgba(255, 255, 255, 0.7) 70%, #dcdcdc 70%), url('/Photos/tło.jpg');
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+
+    .text-container {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        text-align: center;
+        opacity: 0.9;
+    }
+
+    .text-content {
+        color: #333;
+        text-shadow: 2px 2px 5px white;
+    }
+
+</style>
+<div>
+    <h4>Kurs</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Nazwa)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Nazwa)
+        </dd>
+
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Opis)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Opis)
+        </dd>
+
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.MovieID)
+        </dt>
+        <dd class="col-sm-10">
+            @if (!string.IsNullOrEmpty(Model.MovieID))
+            {
+                <iframe width="560" height="315" src="https://www.youtube.com/embed/@Model.MovieID" frameborder="0" allowfullscreen></iframe>
+            }
+            else
+            {
+                <p>No video available</p>
+            }
+        </dd>
+        <div style="display: flex; justify-content: flex-start; gap: 10px; align-items: center;">
+            @if (User.Identity.IsAuthenticated)
+            {
+                @if (User.IsInRole("Administrator"))
+                {
+                    @* <form asp-action="Create" asp-controller="Quiz" method="get"> *@
+                    @*     <button type="submit" class="btn btn-primary" name="kursId" value="@Model.KursId">Utwórz nowy quiz</button> *@
+                    @* </form> *@
+                    @* <a asp-action="EditQuiz" asp-controller="Quiz" asp-route-id="@Model.KursId" class="btn btn-warning">Edytuj quiz</a> *@
+                    @* <form asp-action="Create" asp-controller="Quiz" method="get">
+                    <button type="submit" class="btn btn-primary btn-sm" name="kursId" value="@Model.KursId">Utwórz nowy quiz</button>
+                </form> *@
+                    @* <form asp-action="Create" asp-controller="Quiz" method="get" style="margin: 0;">
+                        <button type="submit" class="btn btn-link p-0" name="kursId" value="@Model.KursId" style="border: none; background: none;">
+                            <img src="~/Photos/add.png" alt="Utwórz nowy quiz" style="width: 24px; height: 24px;" />
+                        </button>
+                    </form> *@
+
+                    @if (Model.Quiz == null || !Model.Quiz.Any())
+                    {
+                        <form asp-action="Create" asp-controller="Quiz" method="get" style="margin: 0;">
+                            <button type="submit" class="btn btn-link p-0" name="kursId" value="@Model.KursId" style="border: none; background: none;">
+                                <img src="~/Photos/add.png" alt="Utwórz nowy quiz" style="width: 24px; height: 24px;" />
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <span class="text-muted">Quiz już istnieje</span>
+                    }
+
+
+                    @if (Model.Quiz != null && Model.Quiz.Any())
+                    {
+                        <a asp-action="EditQuiz" asp-controller="Quiz" asp-route-id="@Model.Quiz.First().Id" class="btn btn-link p-0">
+                            <img src="~/Photos/edit.png" alt="Edytuj quiz" style="width: 24px; height: 24px;" />
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="text-muted">Brak quizu</span>
+                    }
+
+
+                }
+            }
+            else
+            {
+                <!-- Opcje dla niezalogowanego użytkownika -->
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Register">Register</a>
+                    </li>
+                </ul>
+            }
+            @if (Model.Quiz != null && Model.Quiz.Any())
+            {
+                <a asp-action="QuizDetails" asp-controller="Quiz" asp-route-id="@Model.Quiz.First().Id" class="btn btn-link p-0">
+                    <img src="~/Photos/detalis.png" alt="Szczegóły quizu" style="width: 24px; height: 24px;" />
+                </a>
+            }
+            else
+            {
+                <span class="text-muted">Brak quizu</span>
+            }
+
+
+
+
+
+
+            @* <a asp-action="QuizDetails" asp-controller="Quiz" asp-route-id="@Model.KursId" class="btn btn-primary">Szczegóły quizu</a> *@
+        </div>
+    </dl>
+</div>
+
+<div>
+    @* <a asp-action="Index">Back to List</a> *@
+    <a asp-action="Index" class="btn btn-link p-0" style="border: none; background: none;">
+        <img src="~/Photos/back.png" alt="Back to List" style="width: 24px; height: 24px;" />
+    </a>
+
+</div>
+<hr>
+
+
+<div class="d-flex justify-content-start mt-3">
+    <a asp-action="Create" asp-controller="Komentarz" asp-route-kursId="@Model.KursId" class="btn btn-link p-0">
+        <img src="~/Photos/add.png" alt="Utwórz nowy quiz" style="width: 24px; height: 24px;" />
+    </a>
+</div>
+
+
+@if (Model.Komentarze != null && Model.Komentarze.Any())
+{
+    <div class="komentarze-container mt-3">
+        @foreach (var komentarz in Model.Komentarze.OrderByDescending(k => k.DataDodania))
+        {
+            <div class="komentarz-item p-3 mb-2 border rounded">
+                <strong>@(komentarz.User?.Imie ?? "Anonim") @(komentarz.User?.Nazwisko ?? "")</strong>
+                - @komentarz.DataDodania.ToString("yyyy-MM-dd HH:mm")
+                <p>@komentarz.Tresc</p>
+
+                @if (User.Identity.IsAuthenticated &&
+               (User.IsInRole("Administrator") ||
+               (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == komentarz.UserId)))
+                {
+                    <div class="d-flex justify-content-end">
+                        <a asp-action="Edit" asp-controller="Komentarz" asp-route-id="@komentarz.KomentarzId" class="btn btn-link p-0">
+                            <img src="~/Photos/edit.png" alt="Edytuj komentarz" style="width: 24px; height: 24px;" />
+                        </a>
+                        <form asp-action="Delete" asp-controller="Komentarz" asp-route-id="@komentarz.KomentarzId" method="post" style="display: inline-block;">
+                            <input type="hidden" name="id" value="@komentarz.KomentarzId" />
+                            <button type="submit" class="btn btn-link p-0" style="border: none; background: none;">
+                                <img src="~/photos/delete.png" alt="Usuń" style="width: 24px; height: 24px;" />
+                            </button>
+                        </form>
+                    </div>
+
+                }
+            </div>
+        }
+    </div>
+}
+else
+{
+    <p class="text-muted">Brak komentarzy dla tego kursu.</p>
+}

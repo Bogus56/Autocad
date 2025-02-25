@@ -1,0 +1,50 @@
+﻿@{
+    ViewData["Title"] = "Kontakt";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/AUTOCAD.styles.css" asp-append-version="true" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            background: linear-gradient(120deg, rgba(255, 255, 255, 0.7) 70%, #dcdcdc 70%), url('/Photos/tło.jpg');
+            background-repeat: no-repeat;
+            background-size: cover;
+            font-family: 'Roboto', sans-serif; /* Ustaw trzcionkę na Roboto */
+        }
+
+        .text-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px; /* Dodaj wewnętrzny odstęp do text-container */
+            text-align: center;
+            opacity: 0.9; /* opcjonalne: można dostosować przeźroczystość do tła */
+        }
+
+        .text-content {
+            color: #333; /* Kolor tekstu dostosowany do tła szarych budynków */
+            text-shadow: 2px 2px 5px white; /* Dodaj cień do tekstu */
+        }
+    </style>
+</head>
+<body>
+
+    <h1>@ViewData["Title"]</h1>
+
+    <p>Use this page to detail your site's privacy policy.</p>
+
+    <!-- Add the content of your Privacy Policy here -->
+
+</body>
+</html>

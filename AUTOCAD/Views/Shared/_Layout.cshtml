@@ -1,0 +1,365 @@
+﻿@using Microsoft.AspNetCore.SignalR
+
+@{
+    var userEmail = User.Identity.Name;
+    
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - AUTOCAD</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/AUTOCAD.styles.css" asp-append-version="true" />
+
+    
+
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(120deg, rgba(255, 255, 255, 0.9) 70%, #dcdcdc 70%), url('/Photos/tło.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        header {
+            flex-shrink: 0;
+        }
+
+        main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto; /* Enable scrolling for the main content */
+            padding: 20px;
+            /* background: rgba(255, 255, 255, 0.85); /* Semi-transparent background for the form */ 
+            margin: 10px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        footer {
+            flex-shrink: 0;
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">AUTOCAD</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                        </li>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            @if (User.IsInRole("Administrator"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Kurs" asp-action="CreateKurs">Tworzenie nowego kursu</a>
+                                </li>
+                            }
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Kurs" asp-action="Index">Lista kursów</a>
+                            </li>
+                            @if (User.IsInRole("Administrator"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Quiz" asp-action="Index">Lista Quizów</a>
+                                </li>
+                            }
+                        }
+                    </ul>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <div class="navbar-collapse collapse d-sm-inline-flex justify-content-end">
+                            <ul class="navbar-nav">
+                               @*  <p class="nav-link text-dark">Witaj, @userEmail!</p> *@
+                                @{
+                                    var userClaims = User.Claims.ToList();
+                                    var Imie = userClaims.FirstOrDefault(c => c.Type == "Imie")?.Value ?? "Nieznajomy";
+                                }
+
+                                <p class="nav-link text-dark">Witaj, @Imie!</p>
+
+                                <form class="form-inline" asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                                    <button type="submit" class="btn btn-link">Logout</button>
+                                </form>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <ul class="navbar-nav ml-auto">
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Register">Register</a>
+                            </li>
+                        </ul>
+                    }
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main role="main" class="container pb-3">
+        @RenderBody()
+    </main>
+   
+    @* czat *@
+    @if (User.Identity.IsAuthenticated)
+    {
+        <button id="chatButton" class="chat-button">
+            <img src="~/Photos/chat.png" alt="Chat" />
+        </button>
+
+
+        <!-- Chat Popup (wszystko w jednym oknie) -->
+        <div class="chat-popup" id="chatPopup">
+            <div class="chat-content">
+                <div class="chat-header">
+                    <h5 id="chatUserName">Chat</h5>
+                    <button type="button" class="btn-close" onclick="closeChatPopup()"></button>
+                </div>
+
+                <!-- Lista użytkowników do wyboru -->
+                <div class="chat-users">
+                    <h6>Wybierz użytkownika:</h6>
+                    <ul class="list-group" id="userList">
+                        <!-- Lista użytkowników będzie dodawana dynamicznie -->
+                    </ul>
+                </div>
+
+                <!-- Część z wiadomościami -->
+                <div class="chat-body" id="chatMessages">
+                    <p class="chat-placeholder">Wybierz użytkownika, aby rozpocząć rozmowę.</p>
+                </div>
+
+                <!-- Pole do wysyłania wiadomości -->
+                <div class="chat-footer">
+                    <input type="text" id="chatInput" placeholder="Napisz wiadomość..." />
+                    <button onclick="sendChatMessage()">Wyślij</button>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            /* Popup styl */
+            /* Styl dla przycisku czatu */
+            .chat-button {
+                position: fixed;
+                bottom: 80px; /* Podniesienie przycisku wyżej */
+                right: 20px; /* Przypięcie do prawej strony */
+                width: 60px;
+                height: 60px;
+                background: transparent; /* Bez tła */
+                border: none;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                cursor: pointer;
+                transition: transform 0.3s ease;
+            }
+
+                .chat-button:hover {
+                    transform: scale(1.1); /* Subtelne powiększenie przy najechaniu */
+                }
+
+                .chat-button img {
+                    width: 50px; /* Lekko większa ikona */
+                    height: 50px;
+                    filter: none; /* Usunięcie filtra – zostanie oryginalny kolor */
+                }
+
+
+            /* Styl okienka czatu */
+            .chat-popup {
+                display: none;
+                position: fixed;
+                bottom: 80px; /* Podniesione wyżej */
+                right: 20px;
+                width: 350px;
+                background: rgba(255, 255, 255, 0.9); /* Przezroczyste tło */
+                backdrop-filter: blur(10px); /* Rozmycie dla efektu */
+                border-radius: 12px;
+                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+                z-index: 9999;
+                overflow: hidden;
+            }
+
+            /* Styl zawartości czatu */
+            .chat-content {
+                display: flex;
+                flex-direction: column;
+                height: 450px;
+                padding: 15px;
+            }
+
+            /* Nagłówek czatu */
+            .chat-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding-bottom: 10px;
+                border-bottom: 1px solid #ccc;
+                font-size: 16px;
+                font-weight: bold;
+                color: #333;
+            }
+
+            /* Lista użytkowników */
+            /* Lista użytkowników - szare odcienie */
+            .chat-users {
+                padding: 10px;
+                border-bottom: 1px solid #ddd;
+                background: rgba(200, 200, 200, 0.15);
+                border-radius: 8px;
+            }
+
+                .chat-users h6 {
+                    margin-bottom: 5px;
+                    font-size: 14px;
+                    font-weight: bold;
+                    color: #444;
+                    text-align: center;
+                }
+
+                .chat-users ul {
+                    list-style: none;
+                    padding: 0;
+                    max-height: 120px;
+                    overflow-y: auto;
+                }
+
+                /* Stylowanie użytkowników */
+                .chat-users li {
+                    padding: 10px;
+                    cursor: pointer;
+                    border: 1px solid #b0b0b0;
+                    margin-bottom: 5px;
+                    border-radius: 6px;
+                    text-align: center;
+                    color: #333;
+                    font-weight: 500;
+                    transition: 0.3s;
+                    background: rgba(240, 240, 240, 0.9);
+                }
+
+                    /* Efekt hover na użytkownika */
+                    .chat-users li:hover {
+                        background: rgba(180, 180, 180, 0.9);
+                        color: #222;
+                        border: 1px solid #888;
+                        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                    }
+
+
+            /* Okno wiadomości */
+            .chat-body {
+                flex-grow: 1;
+                overflow-y: auto;
+                padding: 10px;
+                border-bottom: 1px solid #ddd;
+                font-size: 14px;
+                color: #333;
+            }
+
+            /* Stylowanie wiadomości */
+            .chat-message {
+                padding: 8px;
+                margin-bottom: 8px;
+                border-radius: 6px;
+                font-size: 14px;
+            }
+
+                .chat-message.you {
+                    background: #007bff;
+                    color: white;
+                    align-self: flex-end;
+                }
+
+                .chat-message.them {
+                    background: #e0e0e0;
+                    color: #333;
+                    align-self: flex-start;
+                }
+
+            /* Stopka czatu (pole do wpisania) */
+            .chat-footer {
+                display: flex;
+                padding-top: 10px;
+            }
+
+                .chat-footer input {
+                    flex-grow: 1;
+                    padding: 8px;
+                    border: 1px solid #007bff;
+                    border-radius: 6px;
+                    font-size: 14px;
+                }
+
+                .chat-footer button {
+                    margin-left: 8px;
+                    background: #007bff;
+                    color: white;
+                    border: none;
+                    padding: 8px 12px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    transition: 0.3s;
+                }
+
+                    .chat-footer button:hover {
+                        background: #0056b3;
+                    }
+
+        </style>
+    }
+
+   
+
+
+
+   @*  koniec czat *@
+
+
+    }
+    <footer>
+        <div class="container">
+            &copy; 2024 - AUTOCAD - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+   
+   @*  <script src="~/js/chat.js" asp-append-version="true"></script> *@
+    <script src="~/js/chat.js"></script>
+    <script>
+        console.log("Chat.js załadowany!");
+    </script>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

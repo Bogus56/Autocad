@@ -1,0 +1,78 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/AUTOCAD.styles.css" asp-append-version="true" />
+
+    <!-- Dodaj styl dla trzcionki z Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            background: linear-gradient(120deg, transparent 70%, #dcdcdc 70%), url('/Photos/tło.jpg');
+            background-repeat: no-repeat;
+            background-size: cover;
+            font-family: 'Roboto', sans-serif; /* Ustaw trzcionkę na Roboto */
+
+        }
+
+        .text-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; /* Zmień na lewo */
+            padding: 20px;
+            text-align: left; /* Zmień na lewo */
+            opacity: 0.9;
+            border-radius: 10px;
+            padding: 30px;
+            position: relative;
+            top: -80px;
+
+        }
+
+        .text-content {
+            color: white; /* Zmień kolor tekstu na biały */
+            text-shadow: 2px 2px 5px #333; /* Dodaj cień do tekstu */
+            max-width: 50%; /* Ogranicz szerokość tekstu na 50% szerokości kontenera */
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+           
+        }
+
+        p {
+            font-size: 1.3rem;
+            line-height: 1.6;
+            
+        }
+
+
+
+    </style>
+</head>
+<body>
+    <div class="text-container">
+        <div class="text-content">
+            <h1 class="display-4">Witaj w kursach AutoCAD!</h1>
+            <p>Odkryj świat projektowania i rysowania technicznego z AutoCAD. Poznaj najnowsze techniki i narzędzia, które pomogą Ci stać się ekspertem w tym potężnym oprogramowaniu CAD.</p>
+            <p>Rozpocznij swoją przygodę już teraz!</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,107 @@
+﻿@model AUTOCAD.Models.LoginViewModel
+
+@{
+    ViewData["Title"] = "Login";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/AUTOCAD.styles.css" asp-append-version="true" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            background: linear-gradient(120deg, rgba(255, 255, 255, 0.7) 70%, #dcdcdc 70%), url('/Photos/tło.jpg');
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+        .text-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px; /* Dodaj wewnętrzny odstęp do text-container */
+            text-align: center;
+            opacity: 0.9; /* opcjonalne: można dostosować przeźroczystość do tła */
+        }
+
+        .text-content {
+            color: #333; /* Kolor tekstu dostosowany do tła szarych budynków */
+            text-shadow: 2px 2px 5px white; /* Dodaj cień do tekstu */
+        }
+
+        .login-form {
+            width: 400px;
+            margin: auto; /* Dodane, aby wyśrodkować panel poziomo */
+            border: 1px solid #ced4da;
+            border-radius: 10px;
+            padding: 20px;
+            background-color: rgba(113, 119, 121, 0.5);
+            backdrop-filter: blur(5px);
+            color: #fff;
+        }
+
+            .login-form .form-group {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .login-form input {
+                margin-bottom: 10px;
+            }
+
+        a {
+            color: white;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <!-- Rozszerzony panel logowania z gradientem i cieniem -->
+                <div class="login-form">
+                    <h1 class="text-center">Log In</h1>
+
+                    <form asp-controller="Account" asp-action="Login" method="post">
+                        <div asp-validation-summary="All" class="text-danger"></div>
+
+                        <div class="form-group">
+                            <label asp-for="Email"></label>
+                            <input asp-for="Email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Password"></label>
+                            <input asp-for="Password" class="form-control" />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">Log in</button>
+
+                        <p class="text-center">
+                            <a asp-controller="Account" asp-action="Register">Utwórz konto</a>
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+</body>
+</html>

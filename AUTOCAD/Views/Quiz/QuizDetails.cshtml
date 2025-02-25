@@ -1,0 +1,164 @@
+﻿@model QuizViewModel
+
+<h1>@Model.Title</h1>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        display: flex;
+        background: linear-gradient(120deg, rgba(255, 255, 255, 0.7) 70%, #dcdcdc 70%), url('/Photos/tło.jpg');
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+
+    .text-container {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px; /* Dodaj wewnętrzny odstęp do text-container */
+        text-align: center;
+        opacity: 0.9; /* opcjonalne: można dostosować przeźroczystość do tła */
+    }
+
+    .text-content {
+        color: #333; /* Kolor tekstu dostosowany do tła szarych budynków */
+        text-shadow: 2px 2px 5px white; /* Dodaj cień do tekstu */
+    }
+</style>
+@* <form id="quizForm" asp-controller="Quiz" asp-action="SubmitQuiz" method="post">
+    @for (var i = 0; i < Model.Questions.Count; i++)
+    {
+        var question = Model.Questions[i];
+        <div>
+            <h3>@question.Text</h3>
+            <input type="hidden" name="Answers[@i].QuestionId" value="@question.Id" />
+            @for (var j = 0; j < question.Answers.Count; j++)
+            {
+                var answer = question.Answers[j];
+                <label>
+                    <input type="checkbox" name="Answers[@i].SelectedAnswerIds" value="@answer.Id" data-isCorrect="@answer.IsCorrect" />
+                    @answer.Text
+                </label>
+            }
+        </div>
+    }
+
+    <input type="hidden" name="QuizId" value="@Model.Id" /> <!-- Pole QuizId -->
+    <button type="submit" id="submitQuizBtn">Submit</button>
+</form>
+ *@
+<form id="quizForm" asp-controller="Quiz" asp-action="SubmitQuiz" method="post">
+    @for (var i = 0; i < Model.Questions.Count; i++)
+    {
+        var question = Model.Questions[i];
+        <div data-question-id="@question.Id">
+            <h3>@question.Text</h3>
+            <input type="hidden" name="Answers[@i].QuestionId" value="@question.Id" />
+            @for (var j = 0; j < question.Answers.Count; j++)
+            {
+                var answer = question.Answers[j];
+                <label>
+                    <input type="checkbox" name="Answers[@i].SelectedAnswerIds" value="@answer.Id" data-isCorrect="@answer.IsCorrect" />
+                    @answer.Text
+                </label>
+            }
+        </div>
+    }
+
+    <input type="hidden" name="QuizId" value="@Model.Id" /> <!-- Pole QuizId -->
+    <button type="submit" id="submitQuizBtn">Submit</button>
+</form>
+@* <input type="hidden" name="QuizId" value="@Model.Id" />
+<p>QuizId w modelu (widok .cshtml): @Model.Id</p> *@
+
+<script>
+       document.getElementById("submitQuizBtn").addEventListener("click", async function (event) {
+        event.preventDefault(); // Zatrzymaj domyślne zachowanie przycisku
+
+        try {
+            const form = document.getElementById("quizForm");
+            const quizId = form.querySelector('input[name="QuizId"]').value;
+            const questionElements = form.querySelectorAll('[data-question-id]');
+            const totalQuestions = questionElements.length;
+
+            if (!quizId || parseInt(quizId, 10) === 0) {
+                alert("Błąd: QuizId jest niepoprawny. Nie można przesłać formularza.");
+                return;
+            }
+
+            let correctAnswersCount = 0; // Licznik poprawnych odpowiedzi
+            const answers = []; // Tablica na odpowiedzi użytkownika
+
+            // Iteracja przez wszystkie pytania
+            questionElements.forEach((questionElement) => {
+                const questionId = questionElement.getAttribute('data-question-id');
+
+                // Pobranie zaznaczonych odpowiedzi przez użytkownika
+                const selectedAnswers = Array.from(
+                    questionElement.querySelectorAll('input[type="checkbox"]:checked')
+                ).map(el => el.value);
+
+                // Dodanie odpowiedzi do wyników (do późniejszego wykorzystania, np. do zapisu)
+                answers.push({
+                    QuestionId: parseInt(questionId, 10),
+                    SelectedAnswerIds: selectedAnswers.map(id => parseInt(id, 10))
+                });
+
+                // Pobierz poprawne odpowiedzi z checkboxów oznaczonych jako poprawne
+                const correctAnswers = Array.from(
+                    questionElement.querySelectorAll('input[type="checkbox"][data-isCorrect="True"]')
+                ).map(el => el.value);
+
+                // Sprawdzenie, czy odpowiedzi użytkownika są poprawne
+                if (
+                    correctAnswers.length > 0 &&
+                    selectedAnswers.length > 0 &&
+                    correctAnswers.length === selectedAnswers.length &&
+                    correctAnswers.every(answer => selectedAnswers.includes(answer))
+                ) {
+                    correctAnswersCount++;
+                }
+            });
+
+            // Wyświetl wynik użytkownikowi
+            alert(`Twój wynik: ${correctAnswersCount}/${totalQuestions}`);
+            console.log("Twoje odpowiedzi:", answers);
+
+            // Sprawdzenie, czy wszystkie odpowiedzi są poprawne
+            if (correctAnswersCount === totalQuestions) {
+                const quizResult = {
+                    QuizId: parseInt(quizId, 10),
+                    Score: correctAnswersCount,
+                    Answers: answers
+                };
+
+                // Wysyłanie danych do serwera
+                const response = await fetch('/Quiz/SubmitQuiz', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(quizResult)
+                });
+
+                if (response.ok) {
+                    alert(`Wynik został zapisany w bazie danych! Twój wynik to: ${correctAnswersCount}/${totalQuestions}`);
+                    //window.location.href = '/Quiz/Details/${quizId}';
+                     window.location.href = '/Kurs';
+                } else {
+                    const errorText = await response.text();
+                    console.error('Błąd podczas zapisywania wyników:', errorText);
+                    alert('Nie udało się zapisać wyniku w bazie. Spróbuj ponownie.');
+                }
+            } else {
+                alert("Musisz odpowiedzieć poprawnie na wszystkie pytania, aby zapisać wynik!");
+            }
+        } catch (error) {
+            console.error('Wystąpił błąd podczas zapisywania wyniku:', error);
+            alert('Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.');
+        }
+    });
+
+</script>

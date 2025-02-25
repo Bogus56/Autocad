@@ -1,0 +1,20 @@
+﻿@model List<AUTOCAD.Models.Chat>
+
+<h2>Wiadomości z @ViewBag.ReceiverName</h2>
+
+<div class="chat-box">
+    @foreach (var message in Model)
+    {
+        <div class="message">
+            <p><strong>@(message.SenderId == User.Identity.Name ? "Ty" : "Inny użytkownik"):</strong></p>
+            <p>@message.Message</p>
+            <p><small>@message.SentAt.ToString("yyyy-MM-dd HH:mm")</small></p>
+        </div>
+    }
+</div>
+
+<form asp-action="SendMessage" method="post">
+    <input type="hidden" name="receiverId" value="@ViewBag.ReceiverId" />
+    <textarea name="message" class="form-control" required></textarea>
+    <button type="submit" class="btn btn-primary mt-2">Wyślij</button>
+</form>
