@@ -6,14 +6,18 @@ on:
       - main
 
 jobs:
-  performance-test:
+  load-test:
     runs-on: ubuntu-latest
+
     steps:
       - name: Pobranie repozytorium
         uses: actions/checkout@v3
 
-      - name: Instalacja JMeter
-        run: sudo apt-get install -y jmeter
+      - name: Instalacja Pythona i Locust
+        run: |
+          sudo apt update
+          sudo apt install -y python3 python3-pip
+          pip install locust
 
-      - name: Uruchomienie testów JMeter
-        run: jmeter -n -t test-plan.jmx -l results.jtl
+      - name: Uruchomienie testów Locust
+        run: locust -f locustfile.py --headless -u 100 -r 10 -t 5m
